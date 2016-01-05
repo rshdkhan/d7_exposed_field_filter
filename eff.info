@@ -1,0 +1,7 @@
+name = Exposed Fields Filters
+description = Custom module for exposing node type fields to user to select the keyword from.
+dependencies[] = views
+files[] = eff.module
+files[] = views/eff.views.inc
+files[] = views/views_handler_filters_eff.inc
+core = 7.x
