@@ -1,9 +1,11 @@
-# This is a contributed module to expose fields to visitors for the keywords to search in.
+# Views Exposed Fields Filter
 
-# The flow is going to be:
+This is a contributed module to expose fields to visitors for the keywords to search in.
 
-# User will enter a keyword to search and then select the field from dropdown to search in.
+The flow is going to be:
 
-# Example: search "shabir"  and select first name from field list will search shabir in first name fields.
+User will enter a keyword to search and then select the field from dropdown to search in.
 
-# This is a work in progress.
+Example: search "shabir"  and select first name from field list will search shabir in first name fields.
+
+This is a work in progress.
