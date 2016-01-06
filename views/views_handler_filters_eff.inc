@@ -52,9 +52,8 @@ class views_handler_filter_eff extends views_handler_filter_string {
 
     function value_form(&$form, &$form_state) {
         $this->view->_build('field');
-        $fields = array();
-        // Only add the fields if they have a proper field and table alias.
-        $fields_options = array();
+        $fields_options = array('-1' => t('-Any-'));
+
         foreach ($this->options['fields'] as $id) {
             $field = $this->view->field[$id];
             // Always add the table of the selected fields to be sure a table alias
@@ -64,18 +63,18 @@ class views_handler_filter_eff extends views_handler_filter_string {
             $fields_options[$id] = $field_label;
 
         }
+
         $form['value'] = array(
             '#type' => 'textfield',
             '#title' => t('Value'),
             '#size' => 30,
             '#default_value' => $this->value,
         );
+
         $form['search_field'] = array(
             '#type' => 'select',
             '#title' => t('Select Field'),
-            '#default_value' => $this->value,
             '#options' => $fields_options,
-
         );
 
     }
@@ -83,21 +82,57 @@ class views_handler_filter_eff extends views_handler_filter_string {
     function query() {
         $this->view->_build('field');
         $field_id = $this->view->exposed_data['search_field'];
-        $field = $this->view->field[$field_id];
-        $field->ensure_my_table();
+
+        //In case the the user select any field
+
+        if($field_id == -1) {
+            $fields = array();
+            // Only add the fields if they have a proper field and table alias.
+            foreach ($this->options['fields'] as $id) {
+                $field = $this->view->field[$id];
+                // Always add the table of the selected fields to be sure a table alias
+                // exists.
+                $field->ensure_my_table();
+                if (!empty($field->field_alias) && !empty($field->field_alias)) {
+                    $fields[] = "$field->table_alias.$field->real_field";
+                }
+            }
+            if ($fields) {
+                $count = count($fields);
+                $separated_fields = array();
+                foreach ($fields as $key => $field) {
+                    $separated_fields[] = $field;
+                    if ($key < $count - 1) {
+                        $separated_fields[] = "' '";
+                    }
+                }
+                $expression = implode(', ', $separated_fields);
+                $expression = "CONCAT_WS(' ', $expression)";
+
+                $info = $this->operators();
+                if (!empty($info[$this->operator]['method'])) {
+                    $this->{$info[$this->operator]['method']}($expression);
+                }
+            }
+        } else {
+
+            $field = $this->view->field[$field_id];
+            $field->ensure_my_table();
 
 
-        if (!empty($field->field_alias) && !empty($field->field_alias)) {
-            $field = "$field->table_alias.$field->real_field";
-        }
-        //if field selected send it to along with value to operator functions
-        if ($field) {
-            $info = $this->operators();
+            if (!empty($field->field_alias) && !empty($field->field_alias)) {
+                $field = "$field->table_alias.$field->real_field";
+            }
+            //if field selected send it to along with value to operator functions
+            if ($field) {
+                $info = $this->operators();
 
-            if (!empty($info[$this->operator]['method'])) {
-                $this->{$info[$this->operator]['method']}($field);
+                if (!empty($info[$this->operator]['method'])) {
+                    $this->{$info[$this->operator]['method']}($field);
+                }
             }
         }
+
     }
 
     // By default things like op_equal uses add_where, that doesn't support
